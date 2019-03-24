@@ -1,0 +1,124 @@
+/*Scenario: Add a new pet with valid data
+  Given the request body is: 
+  """
+  {
+    "id": 0,
+    "category": {
+      "id": 0,
+      "name": "string"
+    },
+    "name": "doggie",
+    "photoUrls": [
+      "string"
+    ],
+    "tags": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ],
+    "status": "available"
+  }
+  """
+  When I request "/pet" using HTTP POST
+  Then the response code is 200
+  And the response body is
+  """
+  {
+    "id": 0,
+    "category": {
+      "id": 0,
+      "name": "string"
+    },
+    "name": "doggie",
+    "photoUrls": [
+      "string"
+    ],
+    "tags": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ],
+    "status": "available"
+  }
+  """
+  And there is a new row in table pet in database with content
+  """
+  {
+    "id": 0,
+    "category": {
+      "id": 0,
+      "name": "string"
+    },
+    "name": "doggie",
+    "photoUrls": [
+      "string"
+    ],
+    "tags": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ],
+    "status": "available"
+  }
+  """
+  */
+
+  set pet_str   """
+  {
+    "id": 0,
+    "category": {
+      "id": 0,
+      "name": "string"
+    },
+    "name": "doggie",
+    "photoUrls": [
+      "string"
+    ],
+    "tags": [
+      {
+        "id": 0,
+        "name": "string"
+      }
+    ],
+    "status": "available"
+  }
+  """
+
+  set fail_cnt 0
+  set experr 200
+
+  //Clean test environment after test finished
+  undo add "deleteRowFromPet $pet_str"
+
+  //When I request "/pet" using HTTP POST
+  set RES [sendHTTPCmd POST $pet_str];
+
+  //Then the response code is 200
+  set reterr [$RES retnums]
+  if { ![$RES servermsg $experr] } {
+    util_log "Expected errno $experr, but got $reterr"
+    incr fail_cnt
+  }
+
+  //And the response body is
+  set retStr [$RES get_data]
+  if { $retStr != $pet_str} {
+    util_log "Expected response body $pet_str, but got $retStr"
+    incr fail_cnt
+  }
+
+  //And there is a new row in table pet in database with content
+  set isExisting [queryDB $pet_str]
+  if { isExisting == FALSE } {
+    util_log "There is no row in table pet: $pet_str"
+    incr fail_cnt
+  }
+
+  if { $fail_cnt == 0 } {
+    return PASS
+  } else {
+    return FAIL
+  } 
